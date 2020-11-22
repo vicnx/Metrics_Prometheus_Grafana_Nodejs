@@ -145,3 +145,139 @@ networks:
 
 Partimos de la imagen *prom/prometheus:v2.20.1*, al contenedor le asignaremos el nombre *prometheus_practica* y le asignamos la network *network_practica*. 
 Le asignamos el puerto 9090 y copiamos la configuración a la ruta */etc/prometheus/*, le indicamos que ejecute el siguiente comando para que cargue la configuración previamente copiada: *--config.file=/etc/prometheus/prometheus.yml*. Finalmente, indicamos que dependa del servicio *myapp_practica* para que se inicie cuando este servicio se haya iniciado.
+
+
+### Grafana
+
+Grafana es un servicio que se encarga de graficar las métricas creadas por Prometheus.
+
+El *docker-compose.yml* quedará así:
+
+```
+version: '3'
+services:
+  myapp_practica:
+    build: .
+    container_name: myapp_practica
+    networks:
+    - network_practica
+    ports:
+    - '83:3000'
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    container_name: prometheus_practica
+    networks:
+    - network_practica
+    ports:
+    - "9090:9090"
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+    - --config.file=/etc/prometheus/prometheus.yml
+    depends_on:
+    - myapp_practica
+  grafana:
+    image: grafana/grafana:7.1.5
+    container_name: grafana_practica
+    networks:
+    - network_practica
+    ports:
+    - "3500:3000"
+    volumes:
+    - ./datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    - myGrafanaVol:/var/lib/grafana
+    environment:
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1
+    depends_on:
+    - prometheus
+volumes:
+  myGrafanaVol:
+networks:
+  network_practica:
+```
+
+Partimos de la imagen *grafana/grafana:7.1.5*, al contenedor le asignaremos el nombre *grafana_practica* y le asignamos la network *network_practica*. 
+Le asignamos el puerto 3500 (ya que el 3000 lo tenemos en uso) y copiamos datasources a la ruta */etc/grafana/provisioning/datasources*, creamos un nuevo volumen llamado *myGrafanaVol* y lo asignamos a */var/lib/grafana*. Ahora vamos a establecer las variables de entorno, *GF_AUTH_DISABLE_LOGIN_FORM: "true"* esta variable sirve para deshabilitar el login, *GF_AUTH_ANONYMOUS_ENABLED: "true"* con esta habilitamos el usuario Anónimo, *GF_AUTH_ANONYMOUS_ORG_ROLE: Admin* para cambiar el rol del usuario Anónimo a Admin, *GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1* y instalamos el siguiente plugin. Finalmente indicamos que dependa del servicio Prometheus para que se inicie después que el.
+
+## Ejecutar el Docker Compose 
+
+Una vez creado el Docker Compose vamos a proceder a ejecutarlo, para ello ejecutamos el siguiente comando:
+
+```
+docker-compose up
+```
+<img src="img/docker-compose-up.png" alt="docker-compose-up" with="200" height="auto">
+<img src="img/docker-compose-up2.png" alt="docker-compose-up" with="200" height="auto">
+
+Ahora vamos al navegador y comprobamos las siguientes rutas:
+
+```
+localhost:83
+```
+Aquí podremos ver la app funcionando correctamente.
+
+<img src="img/localhost83.png" alt="localhost83" with="200" height="auto">
+
+```
+localhost:9090
+```
+
+Aquí nos dirigiremos al apartado Status/Targets y veremos que el se muestra el acceso correcto a las métricas capturadas de la app.
+
+<img src="img/localhost9090.png" alt="localhost9090" with="200" height="auto">
+
+```
+localhost:3500
+```
+
+Aquí podremos añádir paneles y graficas de nuestra aplicación
+
+<img src="img/localhost3500.png" alt="localhost3500" with="200" height="auto">
+
+### Crear panel asociado a los endpoints con Grafana.
+
+Dentro de Grafana (*localhost:3500*) nos dirigimos a Create ->  Dashboard
+
+<img src="img/dashboard.png" alt="dashboard" with="200" height="auto">
+
+Seguidamente presionamos en añadir nuevo panel, y vamos a proceder a crear un panel con cada endpoint y después creamos un panel con la suma de las visitas de los dos endpoints.
+
+<img src="img/addpanel.png" alt="addpanel" with="200" height="auto">
+
+Para crear un panel con los dos endpoints nos dirigimos a Metrics y seleccionamos los endpoints.
+
+<img src="img/endpoint.png" alt="endpoint" with="200" height="auto">
+
+Tiene que quedar algo asi:
+
+<img src="img/panel1.png" alt="panel1" with="200" height="auto">
+
+Le damos a aplicar.
+
+Ahora vamos a crear el siguiente panel (suma de todos los endpoints), repetimos el proceso anterior pero en Metrics introducimos lo siguiente:
+
+```
+sum(counterHomeEndpoint+counterMessageEndpoint)
+```
+
+<img src="img/sumpanel.png" alt="sumpanel" with="200" height="auto">
+
+Y en el apartado Visualization seleccionamos el siguiente tema:
+
+<img src="img/tema.png" alt="tema" with="200" height="auto">
+
+Aplciamos y guardamos el Dashboard:
+
+<img src="img/paneles.png" alt="paneles" with="200" height="auto">
+
+<img src="img/save.png" alt="save" with="200" height="auto">
+
+Ahora podemos hacer unas cuantas visitas a los endpoints (*localhost:83* y *localhost:83/message*) y ver las gráficas:
+
+<img src="img/fianl_grafana.png" alt="fianl_grafana" with="200" height="auto">
+
+
+
