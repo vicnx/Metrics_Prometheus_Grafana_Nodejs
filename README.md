@@ -9,7 +9,7 @@ Docker es una plataforma de software que le permite crear, probar e implementar 
 
 Docker permite entregar código con mayor rapidez, estandarizar las operaciones de las aplicaciones, transferir el código con facilidad y ahorrar dinero al mejorar el uso de recursos. Con Docker, se obtiene un solo objeto que se puede ejecutar de manera fiable en cualquier lugar.
 
-### Como instalar Docker en Ubuntu
+### `Como instalar Docker en Ubuntu`
 
 Para instalar Docker tendremos que ejecutar los siguientes comandos en nuestra terminal:
 
@@ -36,7 +36,7 @@ Con Compose se puede crear diferentes contenedores, diferentes servicios, unirlo
 
 Docker Compose te permite mediante archivos YAML instruir al Docker Engine a realizar tareas, programaticamente.
 
-### Como instalar Docker-Compose en Ubuntu
+### `Como instalar Docker-Compose en Ubuntu`
 
 Para instalar Docker-Compose tendremos que ejecutar los siguientes comandos en nuestra terminal:
 
