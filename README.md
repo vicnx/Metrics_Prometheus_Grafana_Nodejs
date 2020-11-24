@@ -31,10 +31,10 @@ sudo systemctl status docker
 
 ## ¿Qué es Docker Compose?
 
-Docker Compose es una herramienta que permite simplificar el uso de Docker. 
-Con Compose se puede crear diferentes contenedores, diferentes servicios, unirlos a un volúmen común, iniciarlos y apagarlos, etc. Es un componente fundamental para poder construir aplicaciones y microservicios. 
+Docker Compose es una herramienta que permite simplificar el uso de Docker.
+Con Compose se puede crear diferentes contenedores, diferentes servicios, unirlos a un volumen común, iniciarlos y apagarlos, etc. Es un componente fundamental para poder construir aplicaciones y microservicios.
 
-Docker Compose te permite mediante archivos YAML instruir al Docker Engine a realizar tareas, programaticamente.
+Docker Compose te permite mediante archivos YAML instruir al Docker Engine a realizar tareas, programáticamente.
 
 ### Como instalar Docker-Compose en Ubuntu
 
@@ -50,7 +50,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ## Introducción a la práctica
 
-En esta práctica aprenderemos el funcionamiento de Docker junto a Docker Compose. Tendremos que realizar un archivo docker compose que contendrá 3 servicios (la aplicación, Prometheus y Grafana) conectados entre si, en ese archivo docker compose tambien utilizaremos un DockerFile. Finalmente intentaremos implementar la practica en un proyecto más grande.
+En esta práctica aprenderemos el funcionamiento de Docker junto a Docker Compose. Tendremos que realizar un archivo Docker Compose que contendrá 3 servicios (la aplicación, Prometheus y Grafana) conectados entre si, en ese archivo docker compose también utilizaremos un DockerFile. Finalmente intentaremos implementar la práctica en un proyecto más grande.
 
 ## Aplicación
 
@@ -60,7 +60,7 @@ He movido los archivos del servidor a la carpeta src.
 
 ### Creación del dockerignore.
 
-Antes de realizar el Dockerfile es recomendable crear un dockerignore para evitar que archivos/carpetas inecesarias se pasen al contenedor, en mi caso voy a introducir en el dockerignore la carpeta node_modules (ya que en el servidor ya instalaremos los paquetes necesarios.)
+Antes de realizar el Dockerfile es recomendable crear un dockerignore para evitar que archivos/carpetas innecesarias se pasen al contenedor, en mi caso voy a introducir en el dockerignore la carpeta node_modules (ya que en el servidor ya instalaremos los paquetes necesarios.)
 
 Para ello creamos un fichero con el nombre *.dockerignore* y añadimos *node_modules*
 
@@ -81,15 +81,15 @@ Primero obtenemos la imagen alpine3.10 de Node. Ahora tenemos que indicar la rut
 
 Copiamos el contenido de la carpeta local src (donde tenemos el servidor) al directorio de trabajo actual, esto copiara los archivos de dentro de SRC a la carpeta myapp de nuestro contenedor.
 
-Ahora vamos a instalar los paquetes necesarios para el funcionamiento del servidor, en el Dockerfile indicamos que realize un NPM INSTALL en el directorio donde tenemos el packages.json.
+Ahora vamos a instalar los paquetes necesarios para el funcionamiento del servidor, en el Dockerfile indicamos que realice un NPM INSTALL en el directorio donde tenemos el packages.json.
 
-Tenemos que exponer el puerto 3000 para después poder vincularlo con uno de nuestra maquina real.
+Tenemos que exponer el puerto 3000 para después poder vincularlo con uno de nuestra máquina real.
 
 Finalmente le indicamos al Dockerfile que ejecute el servidor con node app.js, esto dejará abierto el servidor en el contenedor.
 
 
 ### Test Dockerfile
-Una vez finalizado el Dockerfile recomiendo probarlo realizando un build y viendo que podemos acceder
+Una vez finalizado el Dockerfile recomiendo probarlo realizando un build y viendo que podemos acceder.
 
 ```
 docker build . --tag myapp
@@ -117,7 +117,7 @@ Y si vamos al navegador por el puerto indicado podremos acceder a la web que est
 
 ## Crear el Docker Compose 
 
-Vamos a crear un archivo *docker-compose.yml* en el cual iniciaremos tres servicios, el primero será la Aplicación con su dockerfile, después el prometheus para recoger metricas en tiempo real y el Grafana para crear graficas obtenidas desde el prometheus.
+Vamos a crear un archivo *docker-compose.yml* en el cual iniciaremos tres servicios, el primero será la Aplicación con su dockerfile, después el prometheus para recoger métricas en tiempo real y el Grafana para crear gráficas obtenidas desde el prometheus.
 
 Primero vamos a añadir el servicio que se encargará de crear el contenedor con el Dockerfile anteriormente creado.
 
@@ -142,9 +142,9 @@ A continuación, le asignamos el nombre de contenedor, y creamos la network que 
 
 ### Prometheus
 
-Prometheus es una aplicación que nos permite recoger métricas de de una aplicación en tiempo real.
+Prometheus es una aplicación que nos permite recoger métricas de una aplicación en tiempo real.
 
-Ahora vamos crear el servicio que se encargará de montar el contendor del prometheus
+Ahora vamos a crear el servicio que se encargará de montar el contendor del prometheus
 
 El *docker-compose.yml* quedará así:
 
@@ -175,8 +175,11 @@ networks:
   network_practica:
 ```
 
-Partimos de la imagen *prom/prometheus:v2.20.1*, al contenedor le asignaremos el nombre *prometheus_practica* y le asignamos la network *network_practica*. 
-Le asignamos el puerto 9090 y copiamos la configuración a la ruta */etc/prometheus/*, le indicamos que ejecute el siguiente comando para que cargue la configuración previamente copiada: *--config.file=/etc/prometheus/prometheus.yml*. Finalmente, indicamos que dependa del servicio *myapp_practica* para que se inicie cuando este servicio se haya iniciado.
+Partimos de la imagen *prom/prometheus:v2.20.1*, al contenedor le asignaremos el nombre *prometheus_practica* y le asignamos la network *network_practica*.
+
+Le asignamos el puerto 9090 y copiamos la configuración a la ruta */etc/prometheus/*, le indicamos que ejecute el siguiente comando para que cargue la configuración previamente copiada: *--config.file=/etc/prometheus/prometheus.yml*.
+
+Finalmente, indicamos que dependa del servicio *myapp_practica* para que se inicie cuando este servicio se haya iniciado.
 
 
 ### Grafana
@@ -231,8 +234,18 @@ networks:
   network_practica:
 ```
 
-Partimos de la imagen *grafana/grafana:7.1.5*, al contenedor le asignaremos el nombre *grafana_practica* y le asignamos la network *network_practica*. 
-Le asignamos el puerto 3500 (ya que el 3000 lo tenemos en uso) y copiamos datasources a la ruta */etc/grafana/provisioning/datasources*, creamos un nuevo volumen llamado *myGrafanaVol* y lo asignamos a */var/lib/grafana*. Ahora vamos a establecer las variables de entorno, *GF_AUTH_DISABLE_LOGIN_FORM: "true"* esta variable sirve para deshabilitar el login, *GF_AUTH_ANONYMOUS_ENABLED: "true"* con esta habilitamos el usuario Anónimo, *GF_AUTH_ANONYMOUS_ORG_ROLE: Admin* para cambiar el rol del usuario Anónimo a Admin, *GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1* y instalamos el siguiente plugin. Finalmente indicamos que dependa del servicio Prometheus para que se inicie después que el.
+Partimos de la imagen *grafana/grafana:7.1.5*, al contenedor le asignaremos el nombre *grafana_practica* y le asignamos la network *network_practica*.
+
+Le asignamos el puerto 3500 (ya que el 3000 lo tenemos en uso) y copiamos datasources a la ruta */etc/grafana/provisioning/datasources*, creamos un nuevo volumen llamado *myGrafanaVol* y lo asignamos a */var/lib/grafana*.
+
+Ahora vamos a establecer las variables de entorno:
+
+- *GF_AUTH_DISABLE_LOGIN_FORM: "true"* esta variable sirve para deshabilitar el login,
+- *GF_AUTH_ANONYMOUS_ENABLED: "true"* con esta habilitamos el usuario Anónimo,
+- *GF_AUTH_ANONYMOUS_ORG_ROLE: Admin* para cambiar el rol del usuario Anónimo a Admin,
+- *GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1* e instalamos el siguiente plugin.
+
+Finalmente indicamos que dependa del servicio Prometheus para que se inicie después que este.
 
 ## Ejecutar el Docker Compose 
 
@@ -257,7 +270,7 @@ Aquí podremos ver la app funcionando correctamente.
 localhost:9090
 ```
 
-Aquí nos dirigiremos al apartado Status/Targets y veremos que el se muestra el acceso correcto a las métricas capturadas de la app.
+Aquí nos dirigiremos al apartado Status/Targets y veremos que se muestra el acceso correcto a las métricas capturadas de la app.
 
 <img src="img/localhost9090.png" alt="localhost9090" with="200" height="auto">
 
@@ -265,7 +278,7 @@ Aquí nos dirigiremos al apartado Status/Targets y veremos que el se muestra el 
 localhost:3500
 ```
 
-Aquí podremos añádir paneles y graficas de nuestra aplicación
+Aquí podremos añadir paneles y gráficas de nuestra aplicación.
 
 <img src="img/localhost3500.png" alt="localhost3500" with="200" height="auto">
 
@@ -283,13 +296,13 @@ Para crear un panel con los dos endpoints nos dirigimos a Metrics y seleccionamo
 
 <img src="img/endpoint.png" alt="endpoint" with="200" height="auto">
 
-Tiene que quedar algo asi:
+Tiene que quedar algo así:
 
 <img src="img/panel1.png" alt="panel1" with="200" height="auto">
 
 Le damos a aplicar.
 
-Ahora vamos a crear el siguiente panel (suma de todos los endpoints), repetimos el proceso anterior pero en Metrics introducimos lo siguiente:
+Ahora vamos a crear el siguiente panel (suma de todos los endpoints), repetimos el proceso anterior, pero en Metrics introducimos lo siguiente:
 
 ```
 sum(counterHomeEndpoint+counterMessageEndpoint)
