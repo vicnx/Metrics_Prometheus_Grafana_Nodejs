@@ -169,7 +169,7 @@ services:
     ports:
     - "9090:9090"
     volumes:
-    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
     - --config.file=/etc/prometheus/prometheus.yml
     depends_on:
@@ -209,7 +209,7 @@ services:
     ports:
     - "9090:9090"
     volumes:
-    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
     - --config.file=/etc/prometheus/prometheus.yml
     depends_on:
@@ -222,7 +222,7 @@ services:
     ports:
     - "3500:3000"
     volumes:
-    - ./datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    - ./Grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
     - myGrafanaVol:/var/lib/grafana
     environment:
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
