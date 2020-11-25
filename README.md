@@ -1,5 +1,5 @@
 # PRACTICA 2. DOCKER - DOCKER COMPOSE.
-## Vicente Andani Auñón
+#### Vicente Andani Auñón
 
 <img src="img/dc.jpg" alt="icono docker compose" with="200" height="200">
 
@@ -323,6 +323,365 @@ Aplciamos y guardamos el Dashboard:
 Ahora podemos hacer unas cuantas visitas a los endpoints (*localhost:83* y *localhost:83/message*) y ver las gráficas:
 
 <img src="img/fianl_grafana.png" alt="fianl_grafana" with="200" height="auto">
+
+## Integración en Yuker
+
+Yuker es el proyecto que yo he realizado con Yolanda, trata de una aplicacion donde los usuarios pueden dejar preguntas y otros pueden responderlas. 
+Es un proyecto con dos backends (rest y graphql) y un frontend (angularjs). 
+
+Ahora vamos a integrar Prometheus y Grafana en él. Aquí bajo adjunto el enlace del repositorio para poder ver el código con mayor claridad.
+
+Proyecto: [YUKER](https://github.com/vicnx/Yuker).
+
+### Docker-Compose de la aplicación
+
+Primero tenemos que realizar el Docker-compose de los backends de la aplicación. 
+
+Creamos el fichero docker-compose.yml en la carpeta backend.
+
+<img src="img/yuker1.png" alt="estructura" with="200" height="auto">
+
+En el docker compose tendremos que añadir 3 servicios, uno para la api rest otro para graphql y el último para mongo. (más tarde añadiremos el prometheus y el grafana)
+```
+version: "3"
+services:
+ yuker_rest:
+  image: mhart/alpine-node:8
+  container_name: yuker_rest
+  restart: on-failure
+  working_dir: /yuker
+  command: npm start
+  ports:
+   - "3000:3000"
+  volumes:
+   - ./rest:/yuker
+  links: 
+   - mongo
+  depends_on:
+   - mongo
+  networks:
+   - network_yuker
+ yuker_graphql:
+  image: mhart/alpine-node:8
+  container_name: yuker_graphql
+  restart: on-failure
+  working_dir: /yuker
+  command: npm start
+  ports:
+   - "3001:3001"
+  volumes:
+   - ./graphql:/yuker
+  links: 
+   - 'mongo'
+  depends_on:
+   - 'mongo'
+  networks:
+   - network_yuker
+ mongo:
+  image: mvertes/alpine-mongo
+  container_name: mongo_yuker
+  ports:
+   - "27018:27017"
+  volumes:
+   - /data/db
+  networks:
+   - network_yuker
+networks:
+  network_yuker:
+```
+
+Antes de probar el docker compose, tendremos que cambiar unas rutas en nuestra aplicación. Nos dirigimos a *backend/rest/app.js* y localizamos la siguiente línea:
+```
+mongoose.connect('mongodb://localhost/app_social_conduit_js');
+```
+La reemplazamos por la siguiente:
+
+```
+mongoose.connect('mongodb://mongo:27017/app_social_conduit_js');
+```
+
+Ahora vamos a *backend/graphql/app.js* y realizamos el mismo proceso.
+
+Esto se encarga de apuntar al contenedor con ese nombre **mongo**.
+
+Ahora que ya tenemos listo el docker-compose de los backends de la aplicación, podemos implementar el **prometheus** y el **grafana**.
+
+### Prometheus
+
+#### Configuración
+
+Antes de nada tendremos que crear en nuestra carpeta *backend* una carpeta llamada **Prometheus**, donde estará la configuración.
+
+<img src="img/yuker2.png" alt="estructura Prometheus" with="200" height="auto">
+
+**prometheus.yml**
+```
+global:
+  scrape_interval: 5s
+  evaluation_interval: 30s
+scrape_configs:
+  - job_name: "example-nodejs-app"
+    honor_labels: true
+    static_configs:
+      - targets: ["yuker_rest:3000"]
+```
+
+En el campo targets introducimos el nombre de nuestro servicio de api rest.
+
+#### Docker-Compose
+
+En nuestro **docker-compose.yml** añadimos lo siguiente:
+
+```
+ prometheus:
+  image: prom/prometheus:v2.20.1
+  container_name: prometheus_yuker
+  volumes:
+  - ./prometheus/:/etc/prometheus
+  ports:
+  - "9090:9090"
+  depends_on:
+  - yuker_rest
+  links:
+  - yuker_rest
+  command: ["--config.file=/etc/prometheus/prometheus.yml"]
+  networks:
+  - network_yuker
+```
+
+#### Nuevos Paquetes
+
+Seguidamente tendremos que instalar dos paquetes nuevos en nuestra aplicación para que funcione correctamente.
+
+En la ruta *backend/rest/* instalamos los siguientes paquetes:
+```
+npm install prom-client
+```
+```
+npm install response-time
+```
+
+#### Endpoints
+
+Vamos a crear un endpoint para probar el funcionamiento más adelante.
+
+Nos dirigimos a *backend/rest/routes/api/yuks.js*
+
+Y vamos a añadir el siguiente código justo al principio para crear un contador.
+
+```
+let client = require('prom-client');
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ timeout: 5000 });
+
+const counterYuksEndpoint = new client.Counter({
+  name: 'counterYuksEndpoint',
+  help: 'The total number of processed requests to get endpoint'
+});
+```
+
+Ahora localizamos la siguiente línea:
+
+```
+router.get('/', auth.optional, function(req, res, next) {
+```
+
+y justo bajo añadimos el incrementador:
+
+```
+counterYuksEndpoint.inc();
+```
+
+Cada vez que alguien entre a la ruta *http://localhost:3000/api/yuks* se sumará uno en ese contador.
+
+#### Metrics
+
+Ahora vamos a crear una nueva ruta en nuestra aplicación para poder visualizar las métricas:
+
+Vamos a la ruta *backend/rest/routes/index.js* y dentro añadimos la nueva ruta.
+
+```
+router.use('/metrics', require('./metrics'));
+```
+
+Ahora si iniciamos el docker-compose podremos comprobar que si nos dirigimos a la ruta *localhost/3000/metrics* nos aparecen las métricas.
+
+<img src="img/metrics.png" alt="metrics" with="200" height="auto">
+
+Y al final tendremos el endpoint:
+
+<img src="img/yukcounter.png" alt="Contador Yuks" with="200" height="auto">
+
+#### Comprobación
+
+Para comprobar que Prometheus funciona correctamente, iniciamos el docker-compose y nos dirigimos a *http://localhost:9090*.
+
+Y vamos a Status -> Targets
+
+<img src="img/prometheus-test.png" alt="Prometheus" with="200" height="auto">
+
+### Grafana en Yuker
+
+#### Configuración
+
+Una vez montado *Prometheus* vamos a empezar con *Grafana*.
+
+Creamos una carpeta llamada Grafana en */backend/* dentro creamos un archivo llamado **datasources.yml**.
+
+<img src="img/grafanaconf.png" alt="Grafana Conf" with="200" height="auto">
+
+**datasources.yml**
+```
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: prometheus_yuker:9090
+    basicAuth: false
+    isDefault: true
+    editable: true
+```
+
+En el campo *url* introducimos el nombre del servicio *Prometheus* anteriormente creado junto con su puerto.
+
+#### Docker-Compose
+
+En nuestro **docker-compose.yml** añadimos el servicio **Grafana**.
+
+```
+ grafana:
+  image: grafana/grafana:7.1.5
+  container_name: grafana_yuker
+  environment:
+   - GF_DISABLE_LOGIN_FORM=true
+   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+   - GF_AUTH_ANONYMOUS_ENABLED=true
+   - GF_INSTALL_PLUGINS=grafana-clock-panel 1.0.1
+  volumes:
+   - myGrafanaVol:/var/lib/grafana
+   - ./grafana/:/etc/grafana/provisioning/datasources/
+  ports:
+   - "3500:3000"
+  depends_on:
+   - prometheus
+  links:
+   - prometheus   
+  networks:
+   - network_yuker
+```
+
+y el volumen que usará
+
+```
+volumes:
+  myGrafanaVol: {}
+```
+
+#### Comprobaciones
+
+Ejecutamos el docker-compose y nos dirigimos a la ruta *http://localhost:3500*, ahi veremos el Grafana funcionando. 
+
+Ahora vamos a crear un panel con el endpoint.
+
+<img src="img/panelyuker.png" alt="Panel yuker" with="200" height="auto">
+
+### Resultado
+
+Proyecto: [YUKER](https://github.com/vicnx/Yuker).
+
+**docker-compose.yml**
+```
+version: "3"
+services:
+ yuker_rest:
+  image: mhart/alpine-node:8
+  container_name: yuker_rest
+  restart: on-failure
+  working_dir: /yuker
+  command: npm start
+  ports:
+   - "3000:3000"
+  volumes:
+   - ./rest:/yuker
+  links: 
+   - mongo
+  depends_on:
+   - mongo
+  networks:
+   - network_yuker
+ yuker_graphql:
+  image: mhart/alpine-node:8
+  container_name: yuker_graphql
+  restart: on-failure
+  working_dir: /yuker
+  command: npm start
+  ports:
+   - "3001:3001"
+  volumes:
+   - ./graphql:/yuker
+  links: 
+   - 'mongo'
+  depends_on:
+   - 'mongo'
+  networks:
+   - network_yuker
+ prometheus:
+  image: prom/prometheus:v2.20.1
+  container_name: prometheus_yuker
+  volumes:
+  - ./prometheus/:/etc/prometheus
+  ports:
+  - "9090:9090"
+  depends_on:
+  - yuker_rest
+  links:
+  - yuker_rest
+  command: ["--config.file=/etc/prometheus/prometheus.yml"]
+  networks:
+  - network_yuker
+ mongo:
+  image: mvertes/alpine-mongo
+  container_name: mongo_yuker
+  ports:
+   - "27018:27017"
+  volumes:
+   - /data/db
+  networks:
+   - network_yuker
+ grafana:
+  image: grafana/grafana:7.1.5
+  container_name: grafana_yuker
+  environment:
+   - GF_DISABLE_LOGIN_FORM=true
+   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+   - GF_AUTH_ANONYMOUS_ENABLED=true
+   - GF_INSTALL_PLUGINS=grafana-clock-panel 1.0.1
+  volumes:
+   - myGrafanaVol:/var/lib/grafana
+   - ./grafana/:/etc/grafana/provisioning/datasources/
+  ports:
+   - "3500:3000"
+  depends_on:
+   - prometheus
+  links:
+   - prometheus   
+  networks:
+   - network_yuker
+volumes:
+  myGrafanaVol: {}
+networks:
+  network_yuker:
+```
+Panel en Grafana
+
+<img src="img/panelyuker2.png" alt="Panel yuker" with="200" height="auto">
+
+
+
+
 
 
 
