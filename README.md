@@ -187,9 +187,9 @@ Finalmente, indicamos que dependa del servicio ***myapp_practica*** para que se 
 
 ### Grafana
 
-**Grafana** es un servicio que se encarga de graficar las métricas creadas por Prometheus.
+**Grafana** es un servicio que se encarga de graficar las métricas creadas por **Prometheus**.
 
-El *docker-compose.yml* quedará así:
+El **docker-compose.yml** quedará así:
 
 ```
 version: '3'
@@ -237,22 +237,22 @@ networks:
   network_practica:
 ```
 
-Partimos de la imagen *grafana/grafana:7.1.5*, al contenedor le asignaremos el nombre *grafana_practica* y le asignamos la network *network_practica*.
+Partimos de la imagen ***grafana/grafana:7.1.5***, al contenedor le asignaremos el nombre ***grafana_practica*** y le asignamos la network ***network_practic**a*.
 
-Le asignamos el puerto 3500 (ya que el 3000 lo tenemos en uso) y copiamos datasources a la ruta */etc/grafana/provisioning/datasources*, creamos un nuevo volumen llamado *myGrafanaVol* y lo asignamos a */var/lib/grafana*.
+Le asignamos el ***puerto 3500*** *(ya que el 3000 lo tenemos en uso)* y copiamos ***datasources*** a la ruta ***/etc/grafana/provisioning/datasources***, creamos un nuevo volumen llamado ***myGrafanaVol*** y lo asignamos a ***/var/lib/grafana***.
 
 Ahora vamos a establecer las variables de entorno:
 
-- *GF_AUTH_DISABLE_LOGIN_FORM: "true"* esta variable sirve para deshabilitar el login,
-- *GF_AUTH_ANONYMOUS_ENABLED: "true"* con esta habilitamos el usuario Anónimo,
-- *GF_AUTH_ANONYMOUS_ORG_ROLE: Admin* para cambiar el rol del usuario Anónimo a Admin,
-- *GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1* e instalamos el siguiente plugin.
+- ***GF_AUTH_DISABLE_LOGIN_FORM: "true"*** esta variable sirve para deshabilitar el login,
+- ***GF_AUTH_ANONYMOUS_ENABLED: "true"*** con esta habilitamos el usuario Anónimo,
+- ***GF_AUTH_ANONYMOUS_ORG_ROLE: Admin*** para cambiar el rol del usuario Anónimo a Admin,
+- ***GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1*** e instalamos el siguiente plugin.
 
-Finalmente indicamos que dependa del servicio Prometheus para que se inicie después que este.
+Finalmente indicamos que dependa del servicio **Prometheus** para que se inicie después que este.
 
 ## Ejecutar el Docker Compose 
 
-Una vez creado el Docker Compose vamos a proceder a ejecutarlo, para ello ejecutamos el siguiente comando:
+Una vez creado el **Docker Compose** vamos a proceder a ejecutarlo, para ello ejecutamos el siguiente comando:
 
 ```
 docker-compose up
@@ -273,7 +273,7 @@ Aquí podremos ver la app funcionando correctamente.
 localhost:9090
 ```
 
-Aquí nos dirigiremos al apartado Status/Targets y veremos que se muestra el acceso correcto a las métricas capturadas de la app.
+Aquí nos dirigiremos al apartado ***Status/Targets*** y veremos que se muestra el acceso correcto a las ***métricas*** capturadas de la app.
 
 <img src="img/localhost9090.png" alt="localhost9090" with="200" height="auto">
 
@@ -281,13 +281,13 @@ Aquí nos dirigiremos al apartado Status/Targets y veremos que se muestra el acc
 localhost:3500
 ```
 
-Aquí podremos añadir paneles y gráficas de nuestra aplicación.
+Aquí podremos añadir ***paneles*** y ***gráficas*** de nuestra aplicación.
 
 <img src="img/localhost3500.png" alt="localhost3500" with="200" height="auto">
 
 ### Crear panel asociado a los endpoints con Grafana.
 
-Dentro de Grafana (*localhost:3500*) nos dirigimos a Create ->  Dashboard
+Dentro de **Grafana** (*localhost:3500*) nos dirigimos a ***Create ->  Dashboard***
 
 <img src="img/dashboard.png" alt="dashboard" with="200" height="auto">
 
@@ -295,7 +295,7 @@ Seguidamente presionamos en añadir nuevo panel, y vamos a proceder a crear un p
 
 <img src="img/addpanel.png" alt="addpanel" with="200" height="auto">
 
-Para crear un panel con los dos endpoints nos dirigimos a Metrics y seleccionamos los endpoints.
+Para crear un panel con los dos endpoints nos dirigimos a ***Metrics*** y seleccionamos los ***endpoints***.
 
 <img src="img/endpoint.png" alt="endpoint" with="200" height="auto">
 
@@ -305,7 +305,7 @@ Tiene que quedar algo así:
 
 Le damos a aplicar.
 
-Ahora vamos a crear el siguiente panel (suma de todos los endpoints), repetimos el proceso anterior, pero en Metrics introducimos lo siguiente:
+Ahora vamos a crear el siguiente panel *(suma de todos los endpoints)*, repetimos el proceso anterior, pero en ***Metrics*** introducimos lo siguiente:
 
 ```
 sum(counterHomeEndpoint+counterMessageEndpoint)
@@ -313,11 +313,11 @@ sum(counterHomeEndpoint+counterMessageEndpoint)
 
 <img src="img/sumpanel.png" alt="sumpanel" with="200" height="auto">
 
-Y en el apartado Visualization seleccionamos el siguiente tema:
+Y en el apartado ***Visualization*** seleccionamos el siguiente tema:
 
 <img src="img/tema.png" alt="tema" with="200" height="auto">
 
-Aplciamos y guardamos el Dashboard:
+Aplciamos y guardamos el ***Dashboard***:
 
 <img src="img/paneles.png" alt="paneles" with="200" height="auto">
 
@@ -329,22 +329,24 @@ Ahora podemos hacer unas cuantas visitas a los endpoints (*localhost:83* y *loca
 
 ## Integración en Yuker
 
-Yuker es el proyecto que yo he realizado con Yolanda, trata de una aplicacion donde los usuarios pueden dejar preguntas y otros pueden responderlas. 
+**Yuker** es el proyecto que yo he realizado, trata de una aplicacion donde los usuarios pueden dejar preguntas y otros pueden responderlas. 
 Es un proyecto con dos backends (rest y graphql) y un frontend (angularjs). 
 
-Ahora vamos a integrar Prometheus y Grafana en él. Aquí bajo adjunto el enlace del repositorio para poder ver el código con mayor claridad.
+Ahora vamos a integrar **Prometheus** y **Grafana** en él. 
+
+Aquí bajo adjunto el enlace del ***repositorio*** para poder ver el código con mayor claridad.
 
 Proyecto: [YUKER](https://github.com/vicnx/Yuker).
 
 ### Docker-Compose de la aplicación
 
-Primero tenemos que realizar el Docker-compose de los backends de la aplicación. 
+Primero tenemos que realizar el ***Docker-Compose*** de los backends de la aplicación. 
 
-Creamos el fichero docker-compose.yml en la carpeta backend.
+Creamos el fichero ***docker-compose.yml*** en la carpeta backend.
 
 <img src="img/yuker1.png" alt="estructura" with="200" height="auto">
 
-En el docker compose tendremos que añadir 3 servicios, uno para la api rest otro para graphql y el último para mongo. (más tarde añadiremos el prometheus y el grafana)
+En el ***docker compose*** tendremos que añadir 3 servicios, uno para la ***api rest*** otro para ***graphql*** y el último para ***mongo***. *(más tarde añadiremos el prometheus y el grafana)*
 ```
 version: "3"
 services:
@@ -393,7 +395,7 @@ networks:
   network_yuker:
 ```
 
-Antes de probar el docker compose, tendremos que cambiar unas rutas en nuestra aplicación. Nos dirigimos a *backend/rest/app.js* y localizamos la siguiente línea:
+Antes de probar el **docker compose**, tendremos que cambiar unas ***rutas*** en nuestra aplicación. Nos dirigimos a ***backend/rest/app.js*** y localizamos la siguiente línea:
 ```
 mongoose.connect('mongodb://localhost/app_social_conduit_js');
 ```
@@ -403,11 +405,11 @@ La reemplazamos por la siguiente:
 mongoose.connect('mongodb://mongo:27017/app_social_conduit_js');
 ```
 
-Ahora vamos a *backend/graphql/app.js* y realizamos el mismo proceso.
+Ahora vamos a ***backend/graphql/app.js*** y realizamos el mismo proceso.
 
 Esto se encarga de apuntar al contenedor con ese nombre **mongo**.
 
-Ahora que ya tenemos listo el docker-compose de los backends de la aplicación, podemos implementar el **prometheus** y el **grafana**.
+Ahora que ya tenemos listo el **docker-compose** de los backends de la aplicación, podemos implementar el **Prometheus** y el **Grafana**.
 
 ### Prometheus
 
@@ -454,9 +456,9 @@ En nuestro **docker-compose.yml** añadimos lo siguiente:
 
 #### Nuevos Paquetes
 
-Seguidamente tendremos que instalar dos paquetes nuevos en nuestra aplicación para que funcione correctamente.
+Seguidamente tendremos que instalar **dos paquetes nuevos** en nuestra aplicación para que funcione correctamente.
 
-En la ruta *backend/rest/* instalamos los siguientes paquetes:
+En la ruta ***backend/rest/*** instalamos los siguientes paquetes:
 ```
 npm install prom-client
 ```
@@ -466,7 +468,7 @@ npm install response-time
 
 #### Endpoints
 
-Vamos a crear un endpoint para probar el funcionamiento más adelante.
+Vamos a crear un *endpoint* para probar el funcionamiento más adelante.
 
 Nos dirigimos a *backend/rest/routes/api/yuks.js*
 
@@ -516,7 +518,7 @@ Y al final tendremos el endpoint:
 
 <img src="img/yukcounter.png" alt="Contador Yuks" with="200" height="auto">
 
-#### Comprobación
+#### Comprobaciones
 
 Para comprobar que Prometheus funciona correctamente, iniciamos el docker-compose y nos dirigimos a *http://localhost:9090*.
 
@@ -684,7 +686,15 @@ El **docker-compose.yml** debe estar formado por 5 servicios en total. Estos 5 s
 - El servicio *prometheus* dependerá de *yuker_rest* y cargará su configuración previamente creada, también se le asignara un nombre al contenedor y ejecutamos el comando para cargar la configuración.
 - El servicio *grafana* dependerá de *prometheus* y estará vinculado a este, también asignaremos un nombre al contenedor y vinculamos el volumen previamente dado de alta.
 
-Panel en Grafana
+**Metrics Puerto 3000**
+<img src="img/metrics.png" alt="Metrics" with="200" height="auto">
+
+**Prometheus Puerto 9090**
+
+<img src="img/prometheus-test.png" alt="Prometheus" with="200" height="auto">
+
+
+**Panel en Grafana Puerto 3500**
 
 <img src="img/panelyuker2.png" alt="Panel yuker" with="200" height="auto">
 
