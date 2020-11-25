@@ -426,7 +426,7 @@ scrape_configs:
       - targets: ["yuker_rest:3000"]
 ```
 
-En el campo targets introducimos el nombre de nuestro servicio de api rest.
+En el campo targets introducimos el nombre de nuestro contenedor **Rest**.
 
 #### Docker-Compose
 
@@ -545,7 +545,7 @@ datasources:
     editable: true
 ```
 
-En el campo *url* introducimos el nombre del servicio *Prometheus* anteriormente creado junto con su puerto.
+En el campo *url* introducimos el nombre del contenedor *Prometheus* anteriormente creado junto con su puerto.
 
 #### Docker-Compose
 
@@ -596,85 +596,91 @@ Proyecto: [YUKER](https://github.com/vicnx/Yuker).
 ```
 version: "3"
 services:
- yuker_rest:
-  image: mhart/alpine-node:8
-  container_name: yuker_rest
-  restart: on-failure
-  working_dir: /yuker
-  command: npm start
-  ports:
-   - "3000:3000"
+  yuker_rest:
+    image: mhart/alpine-node:8
+    container_name: yuker_rest
+    restart: on-failure
+    working_dir: /yuker
+    command: npm start
+    ports:
+    - "3000:3000"
+    volumes:
+    - ./rest:/yuker
+    links: 
+    - mongo
+    depends_on:
+    - mongo
+    networks:
+    - network_yuker
+  yuker_graphql:
+    image: mhart/alpine-node:8
+    container_name: yuker_graphql
+    restart: on-failure
+    working_dir: /yuker
+    command: npm start
+    ports:
+    - "3001:3001"
+    volumes:
+    - ./graphql:/yuker
+    links: 
+    - 'mongo'
+    depends_on:
+    - 'mongo'
+    networks:
+    - network_yuker
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    container_name: prometheus_yuker
+    volumes:
+    - ./prometheus/:/etc/prometheus
+    ports:
+    - "9090:9090"
+    depends_on:
+    - yuker_rest
+    links:
+    - yuker_rest
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    networks:
+    - network_yuker
+  mongo:
+    image: mvertes/alpine-mongo
+    container_name: mongo_yuker
+    ports:
+    - "27018:27017"
+    volumes:
+    - /data/db
+    networks:
+    - network_yuker
+  grafana:
+    image: grafana/grafana:7.1.5
+    container_name: grafana_yuker
+    environment:
+    - GF_DISABLE_LOGIN_FORM=true
+    - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    - GF_AUTH_ANONYMOUS_ENABLED=true
+    - GF_INSTALL_PLUGINS=grafana-clock-panel 1.0.1
+    volumes:
+    - myGrafanaVol:/var/lib/grafana
+    - ./grafana/:/etc/grafana/provisioning/datasources/
+    ports:
+    - "3500:3000"
+    depends_on:
+    - prometheus
+    links:
+    - prometheus   
+    networks:
+    - network_yuker
   volumes:
-   - ./rest:/yuker
-  links: 
-   - mongo
-  depends_on:
-   - mongo
+    myGrafanaVol: {}
   networks:
-   - network_yuker
- yuker_graphql:
-  image: mhart/alpine-node:8
-  container_name: yuker_graphql
-  restart: on-failure
-  working_dir: /yuker
-  command: npm start
-  ports:
-   - "3001:3001"
-  volumes:
-   - ./graphql:/yuker
-  links: 
-   - 'mongo'
-  depends_on:
-   - 'mongo'
-  networks:
-   - network_yuker
- prometheus:
-  image: prom/prometheus:v2.20.1
-  container_name: prometheus_yuker
-  volumes:
-  - ./prometheus/:/etc/prometheus
-  ports:
-  - "9090:9090"
-  depends_on:
-  - yuker_rest
-  links:
-  - yuker_rest
-  command: ["--config.file=/etc/prometheus/prometheus.yml"]
-  networks:
-  - network_yuker
- mongo:
-  image: mvertes/alpine-mongo
-  container_name: mongo_yuker
-  ports:
-   - "27018:27017"
-  volumes:
-   - /data/db
-  networks:
-   - network_yuker
- grafana:
-  image: grafana/grafana:7.1.5
-  container_name: grafana_yuker
-  environment:
-   - GF_DISABLE_LOGIN_FORM=true
-   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-   - GF_AUTH_ANONYMOUS_ENABLED=true
-   - GF_INSTALL_PLUGINS=grafana-clock-panel 1.0.1
-  volumes:
-   - myGrafanaVol:/var/lib/grafana
-   - ./grafana/:/etc/grafana/provisioning/datasources/
-  ports:
-   - "3500:3000"
-  depends_on:
-   - prometheus
-  links:
-   - prometheus   
-  networks:
-   - network_yuker
-volumes:
-  myGrafanaVol: {}
-networks:
-  network_yuker:
+    network_yuker:
 ```
+El **docker-compose.yml** debe estar formado por 5 servicios en total. Estos 5 servicios estarán conectados a la misma red.
+
+- Los servicios *yuker_rest* y *yuker_graphql* dependerán del servicio *mongo* y estarán vinculados a este.
+- El servicio *prometheus* dependerá de *yuker_rest* y cargará su configuración previamente creada, también se le asignara un nombre al contenedor y ejecutamos el comando para cargar la configuración.
+- El servicio *grafana* dependerá de *prometheus* y estará vinculado a este, también asignaremos un nombre al contenedor y vinculamos el volumen previamente dado de alta.
+
 Panel en Grafana
 
 <img src="img/panelyuker2.png" alt="Panel yuker" with="200" height="auto">
