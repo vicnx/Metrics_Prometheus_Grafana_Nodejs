@@ -5,9 +5,9 @@
 
 ## ¿Qué es Docker?
 
-Docker es una plataforma de software que le permite crear, probar e implementar aplicaciones rápidamente. Docker empaqueta software en unidades estandarizadas llamadas contenedores que incluyen todo lo necesario para que el software se ejecute. Utilizando Docker evitamos la sobrecarga de iniciar y mantener máquinas virtuales.
+**Docker** es una plataforma de software que le permite crear, probar e implementar aplicaciones rápidamente. **Docker** empaqueta software en unidades estandarizadas llamadas contenedores que incluyen todo lo necesario para que el software se ejecute. Utilizando Docker evitamos la sobrecarga de iniciar y mantener máquinas virtuales.
 
-Docker permite entregar código con mayor rapidez, estandarizar las operaciones de las aplicaciones, transferir el código con facilidad y ahorrar dinero al mejorar el uso de recursos. Con Docker, se obtiene un solo objeto que se puede ejecutar de manera fiable en cualquier lugar.
+**Docker** permite entregar código con mayor rapidez, estandarizar las operaciones de las aplicaciones, transferir el código con facilidad y ahorrar dinero al mejorar el uso de recursos. Con Docker, se obtiene un solo objeto que se puede ejecutar de manera fiable en cualquier lugar.
 
 ### Como instalar Docker en Ubuntu
 
@@ -31,10 +31,10 @@ sudo systemctl status docker
 
 ## ¿Qué es Docker Compose?
 
-Docker Compose es una herramienta que permite simplificar el uso de Docker.
-Con Compose se puede crear diferentes contenedores, diferentes servicios, unirlos a un volumen común, iniciarlos y apagarlos, etc. Es un componente fundamental para poder construir aplicaciones y microservicios.
+**Docker Compose** es una herramienta que permite simplificar el uso de Docker.
+Con **Docker Compose** se puede crear diferentes contenedores, diferentes servicios, unirlos a un volumen común, iniciarlos y apagarlos, etc. Es un componente fundamental para poder construir aplicaciones y microservicios.
 
-Docker Compose te permite mediante archivos YAML instruir al Docker Engine a realizar tareas, programáticamente.
+**Docker Compose** te permite mediante archivos YAML instruir al Docker Engine a realizar tareas, programáticamente.
 
 ### Como instalar Docker-Compose en Ubuntu
 
@@ -50,23 +50,25 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ## Introducción a la práctica
 
-En esta práctica aprenderemos el funcionamiento de Docker junto a Docker Compose. Tendremos que realizar un archivo Docker Compose que contendrá 3 servicios (la aplicación, Prometheus y Grafana) conectados entre si, en ese archivo docker compose también utilizaremos un DockerFile. Finalmente intentaremos implementar la práctica en un proyecto más grande.
+En esta práctica aprenderemos el funcionamiento de **Docker** junto a **Docker Compose**. Tendremos que realizar un archivo Docker Compose que contendrá **3 servicios** *(la aplicación, Prometheus y Grafana)* conectados entre si, en ese archivo docker compose también utilizaremos un DockerFile. 
+
+Finalmente intentaremos implementar la práctica en un proyecto más grande *(Yuker)*.
 
 ## Aplicación
 
-Primero vamos a proceder a realizar un contendedor que se encargará de poner en funcionamiento un servidor express. Para ello tenemos que realizar un Dockerfile.
+Primero vamos a proceder a realizar un contendedor que se encargará de poner en funcionamiento **un servidor express**. Para ello tenemos que realizar un Dockerfile.
 
 He movido los archivos del servidor a la carpeta src.
 
 ### Creación del dockerignore.
 
-Antes de realizar el Dockerfile es recomendable crear un dockerignore para evitar que archivos/carpetas innecesarias se pasen al contenedor, en mi caso voy a introducir en el dockerignore la carpeta node_modules (ya que en el servidor ya instalaremos los paquetes necesarios.)
+Antes de realizar el Dockerfile es recomendable crear un **dockerignore** para evitar que archivos/carpetas innecesarias se pasen al contenedor, en mi caso voy a introducir en el **dockerignore** la carpeta **node_modules** *(ya que en el servidor ya instalaremos los paquetes necesarios.)*
 
-Para ello creamos un fichero con el nombre *.dockerignore* y añadimos *node_modules*
+Para ello creamos un fichero con el nombre **.dockerignore** y añadimos **node_modules**
 
 ### Creación del Dockerfile.
 
-Ahora vamos a empezar creando el Dockerfile de la siguiente forma.
+Ahora vamos a empezar creando el **Dockerfile** de la siguiente forma.
 ```
 FROM node:alpine3.10
 RUN mkdir myapp
@@ -77,19 +79,19 @@ EXPOSE 3000
 CMD ["node", "app.js"]
 ```
 
-Primero obtenemos la imagen alpine3.10 de Node. Ahora tenemos que indicar la ruta donde estará nuestra aplicación funcionando, en mi caso creo una carpeta llamada "myapp" y establezco el directorio de trabajo a esa misma carpeta.
+Primero obtenemos la imagen ***alpine3.10 de Node***. Ahora tenemos que indicar la ruta donde estará nuestra aplicación funcionando, en mi caso creo una carpeta llamada ***myapp*** y establezco el directorio de trabajo a esa misma carpeta.
 
-Copiamos el contenido de la carpeta local src (donde tenemos el servidor) al directorio de trabajo actual, esto copiara los archivos de dentro de SRC a la carpeta myapp de nuestro contenedor.
+Copiamos el contenido de la carpeta local src *(donde tenemos el servidor)* al directorio de trabajo actual, esto copiara los archivos de dentro de ***SRC*** a la carpeta ***myapp*** de nuestro contenedor.
 
-Ahora vamos a instalar los paquetes necesarios para el funcionamiento del servidor, en el Dockerfile indicamos que realice un NPM INSTALL en el directorio donde tenemos el packages.json.
+Ahora vamos a instalar los paquetes necesarios para el funcionamiento del servidor, en el **Dockerfile** indicamos que realice un ***NPM INSTALL*** en el directorio donde tenemos el **packages.json**.
 
-Tenemos que exponer el puerto 3000 para después poder vincularlo con uno de nuestra máquina real.
+Tenemos que exponer el ***puerto 3000*** para después poder vincularlo con uno de nuestra máquina real.
 
-Finalmente le indicamos al Dockerfile que ejecute el servidor con node app.js, esto dejará abierto el servidor en el contenedor.
+Finalmente le indicamos al Dockerfile que ejecute el servidor con ***node app.js***, esto dejará abierto el servidor en el contenedor.
 
 
 ### Test Dockerfile
-Una vez finalizado el Dockerfile recomiendo probarlo realizando un build y viendo que podemos acceder.
+Una vez finalizado el **Dockerfile** recomiendo probarlo realizando un build y viendo que podemos acceder.
 
 ```
 docker build . --tag myapp
@@ -103,7 +105,7 @@ docker images
 ```
 <img src="img/myapp_docker_images.png" alt="myapp_docker_images" with="200" height="auto">
 
-Vamos a crear un contenedor con esa imagen, simplemente para probar que funciona correctamente antes de realizar el archivo docker-compose.
+Vamos a crear un contenedor con esa imagen, simplemente para probar que funciona correctamente antes de realizar el archivo **docker-compose.yml**.
 
 ```
 sudo docker run -d -p 9001:3000 --name myapp myapp
@@ -117,9 +119,9 @@ Y si vamos al navegador por el puerto indicado podremos acceder a la web que est
 
 ## Crear el Docker Compose 
 
-Vamos a crear un archivo *docker-compose.yml* en el cual iniciaremos tres servicios, el primero será la Aplicación con su dockerfile, después el prometheus para recoger métricas en tiempo real y el Grafana para crear gráficas obtenidas desde el prometheus.
+Vamos a crear un archivo **docker-compose.yml** en el cual iniciaremos **tres servicios**, el primero será la ***Aplicación con su dockerfile***, después el ***Prometheus*** para recoger métricas en tiempo real y el ***Grafan***a para crear gráficas obtenidas desde el prometheus.
 
-Primero vamos a añadir el servicio que se encargará de crear el contenedor con el Dockerfile anteriormente creado.
+Primero vamos a añadir el servicio que se encargará de crear el contenedor con el **Dockerfile** anteriormente creado.
 
 Quedará asi:
 
@@ -137,16 +139,17 @@ networks:
   network_practica:
 ```
 
-Con el parámetro build indicamos que tiene que partir de un Dockerfile, al estar en la misma ubicación se pone un punto.
-A continuación, le asignamos el nombre de contenedor, y creamos la network que utilizarán los tres servicios. Posteriormente, asignamos el puerto 83 de nuestro ordenador al 3000 del contenedor.
+Con el parámetro ***build*** indicamos que tiene que partir de un **Dockerfile**, al estar en la misma ubicación ***se pone un punto***.
+A continuación, le asignamos el ***nombre de contenedo***r, y ***creamos la network*** que utilizarán los tres servicios. 
+Posteriormente, asignamos el **puerto 83** de nuestro ordenador al ***3000*** del contenedor.
 
 ### Prometheus
 
-Prometheus es una aplicación que nos permite recoger métricas de una aplicación en tiempo real.
+**Prometheus** es una aplicación que nos permite recoger métricas de una aplicación en tiempo real.
 
 Ahora vamos a crear el servicio que se encargará de montar el contendor del prometheus
 
-El *docker-compose.yml* quedará así:
+El **docker-compose.yml** quedará así:
 
 ```
 version: '3'
@@ -175,16 +178,16 @@ networks:
   network_practica:
 ```
 
-Partimos de la imagen *prom/prometheus:v2.20.1*, al contenedor le asignaremos el nombre *prometheus_practica* y le asignamos la network *network_practica*.
+Partimos de la imagen ***prom/prometheus:v2.20.1***, al contenedor le asignaremos el nombre ***prometheus_practica*** y le asignamos la network ***network_practica***.
 
-Le asignamos el puerto 9090 y copiamos la configuración a la ruta */etc/prometheus/*, le indicamos que ejecute el siguiente comando para que cargue la configuración previamente copiada: *--config.file=/etc/prometheus/prometheus.yml*.
+Le asignamos el ***puerto 9090*** y ***copiamos la configuración*** a la ruta ***/etc/prometheus/***, le indicamos que ejecute el siguiente comando para que cargue la configuración previamente copiada: ***--config.file=/etc/prometheus/prometheus.yml***.
 
-Finalmente, indicamos que dependa del servicio *myapp_practica* para que se inicie cuando este servicio se haya iniciado.
+Finalmente, indicamos que dependa del servicio ***myapp_practica*** para que se inicie cuando este servicio se haya iniciado.
 
 
 ### Grafana
 
-Grafana es un servicio que se encarga de graficar las métricas creadas por Prometheus.
+**Grafana** es un servicio que se encarga de graficar las métricas creadas por Prometheus.
 
 El *docker-compose.yml* quedará así:
 
