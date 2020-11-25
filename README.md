@@ -687,6 +687,7 @@ El **docker-compose.yml** debe estar formado por 5 servicios en total. Estos 5 s
 - El servicio *grafana* dependerá de *prometheus* y estará vinculado a este, también asignaremos un nombre al contenedor y vinculamos el volumen previamente dado de alta.
 
 **Metrics Puerto 3000**
+
 <img src="img/metrics.png" alt="Metrics" with="200" height="auto">
 
 **Prometheus Puerto 9090**
